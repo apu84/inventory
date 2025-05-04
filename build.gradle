@@ -66,20 +66,3 @@ tasks.named('test') {
 		exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 	}
 }
-
-bootBuildImage {
-	imageName = "docker.io/apu84/inventory:0.0.1"
-	builder = "paketobuildpacks/builder:base"
-	environment = [
-			"BP_NATIVE_IMAGE" : "false"
-	]
-	docker {
-		publishRegistry {
-			username = 'apu84'
-			password = 'ovmvF5%$*08mJbYQ'
-		}
-	}
-	environment = [
-			"BP_PLATFORM": "linux/amd64"
-	]
-}
