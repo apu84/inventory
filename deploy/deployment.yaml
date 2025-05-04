@@ -24,7 +24,7 @@ spec:
             - containerPort: 8081
           env:
             - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://alloydb-proxy.default.svc.cluster.local:5432/inventory
+              value: jdbc:postgresql://alloydb-proxy:5432/inventory
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
