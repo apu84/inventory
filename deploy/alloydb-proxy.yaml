@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloydb-proxy
+spec:
+  selector:
+    app: alloydb-proxy
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alloydb-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alloydb-proxy
+  template:
+    metadata:
+      labels:
+        app: alloydb-proxy
+    spec:
+      containers:
+        - name: cloud-sql-proxy
+          image: docker.io/apu84/alloydb-auth-proxy:1.4.0
+          imagePullPolicy: Always
+          args:
+            - "--port=5432"
+            - "projects/service-2-service/locations/europe-west1/clusters/service-db-cluster/instances/inventory"
+          volumeMounts:
+            - name: sa-key
+              mountPath: /secrets
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /secrets/key.json
+      volumes:
+        - name: sa-key
+          secret:
+            secretName: alloydb-key

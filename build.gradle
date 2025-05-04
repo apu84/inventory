@@ -1,0 +1,85 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'org.liquibase:liquibase-core:4.23.2'
+
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+	runtimeOnly 'org.postgresql:postgresql:42.7.2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	testImplementation("org.testcontainers:testcontainers:1.20.0")
+	testImplementation("org.testcontainers:postgresql:1.20.6")
+}
+
+kotlin {
+	compilerOptions {
+		freeCompilerArgs.addAll '-Xjsr305=strict'
+	}
+}
+
+allOpen {
+	annotation 'jakarta.persistence.Entity'
+	annotation 'jakarta.persistence.MappedSuperclass'
+	annotation 'jakarta.persistence.Embeddable'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+	if (gradle.startParameter.taskNames.contains('test')) {
+		jvmArgs += [
+				"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005"
+		]
+	}
+	testLogging {
+		showStandardStreams = true
+		events("passed", "skipped", "failed")
+		exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+	}
+}
+
+bootBuildImage {
+	imageName = "docker.io/apu84/inventory:0.0.1"
+	builder = "paketobuildpacks/builder:base"
+	environment = [
+			"BP_NATIVE_IMAGE" : "false"
+	]
+	docker {
+		publishRegistry {
+			username = 'apu84'
+			password = 'ovmvF5%$*08mJbYQ'
+		}
+	}
+	environment = [
+			"BP_PLATFORM": "linux/amd64"
+	]
+}
